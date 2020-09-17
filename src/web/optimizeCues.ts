@@ -181,81 +181,59 @@ export const trimExcessCues = (
 
 // Go through every combination of cues from 1..max size
 // Pick the cues that match the target with the lowest penalty
-export const findBestCueGroup = (
-  seedGroup: CueGroup,
-  maxSize: number,
-  targetGroup: HTMLElement[],
-): CueGroup => {
-  let bestGroup = seedGroup;
+// export const findBestCueGroup = (
+//   seedGroup: CueGroup,
+//   maxSize: number,
+//   targetGroup: HTMLElement[],
+// ): CueGroup => {
+//   // Keep the nearest attribute
+//   // const cueToKeep = findNearestPreferredAttributeCue(seedGroup.cues);
 
-  // Keep the nearest attribute
-  const cueToKeep = findNearestPreferredAttributeCue(seedGroup.cues);
+//   console.log('create combinations');
 
-  for (let i = 1; i <= maxSize; i++) {
-    const combinations = combine(seedGroup.cues, i);
+//   console.log('start trying combinations');
 
-    combinations.forEach((cues: Cue[]) => {
-      const penalty = getPenalty(cues);
+//   for (let i = 0; i < combinations.length; i++) {
+//     const cues = [...combinations[i].cues];
+//     if (cueToKeep && !cues.includes(cueToKeep)) {
+//       cues.push(cueToKeep);
+//     }
 
-      // Skip these cues if they are not better
-      if (penalty > bestGroup.penalty) return;
+//     const selectorParts = buildSelectorParts(cues);
 
-      const valueLength = getValueLength(cues);
+//     // If these selector parts match any element that we are targeting,
+//     // then it's currently the best group.
+//     if (targetGroup.some((target) => isMatch({ selectorParts, target }))) {
+//       console.log('found best');
 
-      if (penalty === bestGroup.penalty) {
-        if (bestGroup.cues.length < cues.length) return;
+//       return {
+//         cues,
+//         penalty: combinations[i].penalty,
+//         selectorParts,
+//         valueLength: getValueLength(cues),
+//       };
+//     }
+//   }
 
-        if (
-          bestGroup.cues.length === cues.length &&
-          valueLength >= bestGroup.valueLength
-        )
-          return;
-      }
+//   return seedGroup;
+// };
 
-      if (cueToKeep && !cues.includes(cueToKeep)) {
-        cues.push(cueToKeep);
-      }
+// export const optimizeCues = (
+//   cueSets: Cue[][],
+//   target: HTMLElement,
+//   targetGroup: HTMLElement[],
+// ): CueGroup[] => {
+//   // Only use the first 50 cue sets (there should never be this many, usually just ~2-3)
+//   return (
+//     cueSets
+//       .slice(0, 50)
+//       .map((cueSet) => {
 
-      const selectorParts = buildSelectorParts(cues);
-
-      // If these selector parts match any element that we are targeting,
-      // then it's currently the best group.
-      if (targetGroup.some((target) => isMatch({ selectorParts, target }))) {
-        bestGroup = {
-          cues,
-          penalty,
-          selectorParts,
-          valueLength,
-        };
-      }
-    });
-  }
-
-  return bestGroup;
-};
-
-export const optimizeCues = (
-  cueSets: Cue[][],
-  target: HTMLElement,
-  targetGroup: HTMLElement[],
-): CueGroup[] => {
-  // Only use the first 50 cue sets (there should never be this many, usually just ~2-3)
-  return cueSets
-    .slice(0, 50)
-    .map((cueSet) => {
-      // Trim down the cue group to 10 if possible
-      // 10 cues, samples of 5 is ~700 combinations which took ~20ms on my machine
-      const cueGroup = trimExcessCues(cueSet, target, 10);
-
-      // Skip if we cannot trim the group to <= 16 cues (this should rarely happen)
-      // 16 cues, samples of 5 is ~7000 combinations which took ~100ms on my machine
-      if (!cueGroup || cueGroup.cues.length > 16) return null;
-
-      return findBestCueGroup(cueGroup, 5, targetGroup);
-    })
-    // Ignore invalid groups
-    .filter((a) => !!a);
-};
+//       })
+//       // Ignore invalid groups
+//       .filter((a) => !!a)
+//   );
+// };
 
 export const pickBestCueGroup = (cueGroups: CueGroup[]): CueGroup | null => {
   let bestCueGroup: CueGroup;
@@ -268,7 +246,8 @@ export const pickBestCueGroup = (cueGroups: CueGroup[]): CueGroup | null => {
     if (
       !bestCueGroup ||
       cueGroup.penalty < bestCueGroup.penalty ||
-      (cueGroup.penalty === bestCueGroup.penalty && cueGroup.valueLength < bestCueGroup.valueLength)
+      (cueGroup.penalty === bestCueGroup.penalty &&
+        cueGroup.valueLength < bestCueGroup.valueLength)
     ) {
       bestCueGroup = cueGroup;
     }
