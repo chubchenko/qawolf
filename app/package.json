@@ -53,7 +53,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.12",
     "lodash": "^4.17.20",
-    "luxon": "^1.26.0",
+    "luxon": "^1.28.1",
     "micro": "^9.3.4",
     "ms-rest-azure": "^3.0.0",
     "next": "10.2.0",
